@@ -1,396 +1,354 @@
 #include <amxmodx>
 #include <amxmisc>
-#include <colorchat>
+#include <cromchat>
+#include <hamsandwich>
+#include <nvault>
 
-/* Uncomment this line to use csstats (kills from /rank), instead of nVault */
-//#define USE_CSSTATS
+#define PLUGIN_VERSION "2.0"
+#define ARG_RANDOM -1
+#define RANDOM_COLOR random_num(50, 255) 
+#define FLAGS_DELAY 0.1
 
-/* Comment this line to disable the HUD message on player spawn */
-#define USE_HUD
-
-#if defined USE_CSSTATS
-	#include <csstats>
-#else
-	#include <nvault>
-	#define nvault_clear(%1) nvault_prune(%1, 0, get_systime() + 1)
-	new g_iVault
-	
-	/* Uncomment this to save data by SteamID and make the plugin work for players with a valid SteamID only */
-	//#define USE_STEAM
-	
-	/* Uncomment this if you want the data to be saved right away - this will prevent losing data when the server crashes */
-	//#define QUICK_SAVE
-	
-	#if defined USE_STEAM
-		#define get_save_info get_user_authid
-	#else
-		#define get_save_info get_user_name
-	#endif
+#if defined client_disconnected
+	#define client_disconnect client_disconnected
 #endif
 
-#if defined USE_HUD
-	#include <hamsandwich>
-	
-	#define HUD_COLOR_RED 0
-	#define HUD_COLOR_GREEN 255
-	#define HUD_COLOR_BLUE 0
-	#define HUD_POSITION_X 0.02
-	#define HUD_POSITION_Y 0.40
-	#define HUD_EFFECTS 2
-	#define HUD_FXTIME 1.0
-	#define HUD_HOLDTIME 5.0
-	#define HUD_FADEINTIME 0.03
-	#define HUD_FADEOUTTIME 0.1
-	#define HUD_CHANNEL -1
-#endif
+enum _:Settings
+{
+	SAVE_TYPE,
+	KILLS_NEEDED,
+	VIP_FLAGS_BIT,
+	VIP_FLAGS_STR[32],
+	VIP_SUCCESS_MESSAGE,
+	bool:HUD_MESSAGE_ENABLED,
+	HUD_MESSAGE_COLOR[3],
+	Float:HUD_MESSAGE_POSITION[2],
+	Float:HUD_MESSAGE_DURATION,
+	HUD_MESSAGE_EFFECTS,
+	Float:HUD_MESSAGE_TIME[3]
+}
 
-#define PLUGIN_VERSION "1.3"
+enum _:PlayerData
+{
+	Name[32],
+	Info[35],
+	Kills
+}
 
-new g_szPrefix[32] = "^1[^3VIP Plus^1]"
-new g_pKills, g_pFlags
-new g_iKills[33], g_szFlags[32], g_iFlags, g_iNeededKills, g_iFlagZ
+new g_eSettings[Settings],
+	g_ePlayerData[33][PlayerData],
+	g_iObject,
+	g_iVault
 
 public plugin_init()
 {
-	register_plugin("Become VIP Plus", PLUGIN_VERSION, "OciXCrom")
-	register_cvar("BecomeVIPPlus", PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY|FCVAR_UNLOGGED)
+	register_plugin("BecomeVIP Plus", PLUGIN_VERSION, "OciXCrom")
+	register_cvar("CRXBecomeVIP", PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY|FCVAR_UNLOGGED)
+	register_dictionary("BecomeVIP.txt")
+	register_event("DeathMsg", "OnPlayerKilled", "a")
+	register_concmd("becomevip_give_kills", "Cmd_GiveKills", ADMIN_BAN, "<nick|#userid> <kills>")
+	register_concmd("becomevip_reset_kills", "Cmd_ResetKills", ADMIN_BAN, "<nick|#userid>")
+	ReadFile()
+}
+
+public plugin_end()
+	nvault_close(g_iVault)
+
+ReadFile()
+{
+	new szConfigsName[256], szFilename[256]
+	get_configsdir(szConfigsName, charsmax(szConfigsName))
+	formatex(szFilename, charsmax(szFilename), "%s/BecomeVIP.ini", szConfigsName)
+	new iFilePointer = fopen(szFilename, "rt")
 	
-	#if !defined USE_CSSTATS
-		register_concmd("becomevip_restartall", "restartAll", ADMIN_RCON, "deletes the becomeVIP data")
-		register_concmd("becomevip_restart_player", "restartPlayer", ADMIN_RCON, "<nick|#userid>")
-	#endif
+	if(iFilePointer)
+	{
+		new szData[96], szValue[64], szKey[32], szTemp[4][5], i
+		
+		while(!feof(iFilePointer))
+		{
+			fgets(iFilePointer, szData, charsmax(szData))
+			trim(szData)
+			
+			switch(szData[0])
+			{
+				case EOS, '#', ';': continue
+				default:
+				{
+					strtok(szData, szKey, charsmax(szKey), szValue, charsmax(szValue), '=')
+					trim(szKey); trim(szValue)
+					
+					if(equal(szKey, "PLUGIN_PREFIX"))
+						CC_SetPrefix(szValue)
+					else if(equal(szKey, "SAVE_TYPE"))
+						g_eSettings[SAVE_TYPE] = str_to_num(szValue)
+					else if(equal(szKey, "KILLS_NEEDED"))
+						g_eSettings[KILLS_NEEDED] = str_to_num(szValue)
+					else if(equal(szKey, "VIP_FLAGS"))
+					{
+						copy(g_eSettings[VIP_FLAGS_STR], charsmax(g_eSettings[VIP_FLAGS_STR]), szValue)
+						g_eSettings[VIP_FLAGS_BIT] = read_flags(szValue)
+					}
+					if(equal(szKey, "CHECK_KILLS_COMMANDS"))
+					{
+						while(szValue[0] != 0 && strtok(szValue, szKey, charsmax(szKey), szValue, charsmax(szValue), ','))
+						{
+							trim(szKey); trim(szValue)
+							
+							if(szKey[0] == '/' || szKey[0] == '!')
+							{
+								formatex(szData, charsmax(szData), "say %s", szKey)
+								register_clcmd(szData, "Cmd_CheckKills")
+								formatex(szData, charsmax(szData), "say_team %s", szKey)
+								register_clcmd(szData, "Cmd_CheckKills")
+							}
+							else register_clcmd(szData, "Cmd_CheckKills")
+						}
+					}
+					else if(equal(szKey, "VAULT_FILE"))
+						g_iVault = nvault_open(szValue)
+					else if(equal(szKey, "VIP_SUCCESS_MESSAGE"))
+						g_eSettings[VIP_SUCCESS_MESSAGE] = str_to_num(szValue)
+					else if(equal(szKey, "HUD_MESSAGE_ENABLED"))
+					{
+						g_eSettings[HUD_MESSAGE_ENABLED] = bool:str_to_num(szValue)
+						
+						if(g_eSettings[HUD_MESSAGE_ENABLED])
+						{
+							g_iObject = CreateHudSyncObj()
+							RegisterHam(Ham_Spawn, "player", "OnPlayerSpawn", 1)
+						}
+					}
+					else if(equal(szKey, "HUD_MESSAGE_COLOR"))
+					{
+						parse(szValue, szTemp[0], charsmax(szTemp[]), szTemp[1], charsmax(szTemp[]), szTemp[2], charsmax(szTemp[]))
+						
+						for(i = 0; i < 3; i++)
+							g_eSettings[HUD_MESSAGE_COLOR][i] = str_to_num(szTemp[i])
+					}
+					else if(equal(szKey, "HUD_MESSAGE_POSITION"))
+					{
+						parse(szValue, szTemp[0], charsmax(szTemp[]), szTemp[1], charsmax(szTemp[]))
+						
+						for(i = 0; i < 2; i++)
+							g_eSettings[HUD_MESSAGE_POSITION][i] = _:str_to_float(szTemp[i])
+					}
+					else if(equal(szKey, "HUD_MESSAGE_DURATION"))
+						g_eSettings[HUD_MESSAGE_DURATION] = _:str_to_float(szValue)
+					else if(equal(szKey, "HUD_MESSAGE_EFFECTS"))
+					{
+						parse(szValue, szTemp[0], charsmax(szTemp[]), szTemp[1], charsmax(szTemp[]), szTemp[2], charsmax(szTemp[]), szTemp[3], charsmax(szTemp[]))
+						g_eSettings[HUD_MESSAGE_EFFECTS] = str_to_num(szTemp[0])
+						
+						for(i = 0; i < 3; i++)
+							g_eSettings[HUD_MESSAGE_TIME][i] = _:str_to_float(szTemp[i + 1])
+					}
+				}
+			}
+		}
+		
+		fclose(iFilePointer)
+	}
+}
+
+public client_authorized(id)
+{
+	switch(g_eSettings[SAVE_TYPE])
+	{
+		case 0:
+		{
+			get_user_name(id, g_ePlayerData[id][Info], charsmax(g_ePlayerData[][Info]))
+			strtolower(g_ePlayerData[id][Info])
+		}
+		case 1: get_user_ip(id, g_ePlayerData[id][Info], charsmax(g_ePlayerData[][Info]), 1)
+		case 2: get_user_authid(id, g_ePlayerData[id][Info], charsmax(g_ePlayerData[][Info]))
+	}
 	
-	#if defined USE_HUD
-		RegisterHam(Ham_Spawn, "player", "eventPlayerSpawn", 1)
-	#endif
+	get_user_name(id, g_ePlayerData[id][Name], charsmax(g_ePlayerData[][Name]))
+	use_vault(id, false, g_ePlayerData[id][Info])
+}
+
+public client_disconnect(id)
+	use_vault(id, true, g_ePlayerData[id][Info])
 	
-	register_clcmd("say /kills", "cmdKills")
-	register_clcmd("say_team /kills", "cmdKills")
-	register_event("DeathMsg", "eventPlayerKilled", "a")
+public client_infochanged(id)
+{		
+	static szNewName[32], szOldName[32]
+	get_user_info(id, "name", szNewName, charsmax(szNewName))
+	get_user_name(id, szOldName, charsmax(szOldName))
 	
-	g_pKills = register_cvar("becomevip_kills", "1000")
-	g_pFlags = register_cvar("becomevip_flags", "b")
-	get_pcvar_string(g_pFlags, g_szFlags, charsmax(g_szFlags))
+	if(!equal(szNewName, szOldName))
+	{
+		if(!g_eSettings[SAVE_TYPE])
+		{
+			use_vault(id, true, szOldName)
+			use_vault(id, false, szNewName)
+			copy(g_ePlayerData[id][Info], charsmax(g_ePlayerData[][Info]), szNewName)
+			strtolower(g_ePlayerData[id][Info])
+		}
+		
+		set_task(FLAGS_DELAY, "refresh_status", id)
+		copy(g_ePlayerData[id][Name], charsmax(g_ePlayerData[][Name]), szNewName)
+	}
+}
+
+public OnPlayerSpawn(id)
+{
+	if(!is_user_alive(id) || has_vip_flags(id))
+		return
+		
+	set_hudmessage
+	(
+		g_eSettings[HUD_MESSAGE_COLOR][0] == ARG_RANDOM ? RANDOM_COLOR : g_eSettings[HUD_MESSAGE_COLOR][0],
+		g_eSettings[HUD_MESSAGE_COLOR][1] == ARG_RANDOM ? RANDOM_COLOR : g_eSettings[HUD_MESSAGE_COLOR][1],
+		g_eSettings[HUD_MESSAGE_COLOR][2] == ARG_RANDOM ? RANDOM_COLOR : g_eSettings[HUD_MESSAGE_COLOR][2],
+		g_eSettings[HUD_MESSAGE_POSITION][0], g_eSettings[HUD_MESSAGE_POSITION][1],	g_eSettings[HUD_MESSAGE_EFFECTS],
+		g_eSettings[HUD_MESSAGE_TIME][0], g_eSettings[HUD_MESSAGE_DURATION], g_eSettings[HUD_MESSAGE_TIME][1], g_eSettings[HUD_MESSAGE_TIME][2]
+	)
 	
-	g_iFlags = read_flags(g_szFlags)
-	g_iNeededKills = get_pcvar_num(g_pKills)
-	g_iFlagZ = read_flags("z")
+	ShowSyncHudMsg(id, g_iObject, "%L", id, "BECOMEVIP_HUD_MSG", g_eSettings[KILLS_NEEDED], g_ePlayerData[id][Kills])
+}
+
+public OnPlayerKilled()
+{
+	new iAttacker = read_data(1), iVictim = read_data(2)
+		
+	if(is_user_connected(iAttacker) && iAttacker != iVictim)
+	{
+		g_ePlayerData[iAttacker][Kills]++
+		check_status(iAttacker, true)
+	}
+}
+
+public Cmd_CheckKills(id)
+{
+	if(has_vip_flags(id))
+		CC_SendMessage(id, "%L", id, "BECOMEVIP_INFO_YES", g_eSettings[KILLS_NEEDED], g_eSettings[VIP_FLAGS_STR])
+	else
+		CC_SendMessage(id, "%L", id, "BECOMEVIP_INFO_NO", g_eSettings[KILLS_NEEDED] - g_ePlayerData[id][Kills], g_ePlayerData[id][Kills], g_eSettings[VIP_FLAGS_STR])
+		
+	return PLUGIN_HANDLED
+}
+
+public Cmd_GiveKills(id, iLevel, iCid)
+{
+	if(!cmd_access(id, iLevel, iCid, 3))
+		return PLUGIN_HANDLED
+		
+	new szPlayer[32]
+	read_argv(1, szPlayer, charsmax(szPlayer))
 	
-	#if !defined USE_CSSTATS
-		g_iVault = nvault_open("BecomeVIPPlus")
-	#endif
+	new iPlayer = cmd_target(id, szPlayer, CMDTARGET_ALLOW_SELF)
+	
+	if(!iPlayer)
+		return PLUGIN_HANDLED
+		
+	new szName[2][32], szAmount[8]
+	get_user_name(id, szName[0], charsmax(szName[]))
+	get_user_name(iPlayer, szName[1], charsmax(szName[]))
+	read_argv(2, szAmount, charsmax(szAmount))
+	
+	new iAmount = str_to_num(szAmount)
+	g_ePlayerData[iPlayer][Kills] += iAmount
+	check_status(iPlayer, true)
+	
+	CC_LogMessage(0, _, "%L", LANG_PLAYER, iAmount >= 0 ? "BECOMEVIP_GIVE_KILLS" : "BECOMEVIP_TAKE_KILLS", szName[0], iAmount, szName[1])
+	return PLUGIN_HANDLED
+}
+
+public Cmd_ResetKills(id, iLevel, iCid)
+{
+	if(!cmd_access(id, iLevel, iCid, 2))
+		return PLUGIN_HANDLED
+		
+	new szPlayer[32]
+	read_argv(1, szPlayer, charsmax(szPlayer))
+	
+	new iPlayer = cmd_target(id, szPlayer, CMDTARGET_ALLOW_SELF|CMDTARGET_OBEY_IMMUNITY)
+	
+	if(!iPlayer)
+		return PLUGIN_HANDLED
+		
+	new szName[2][32]
+	get_user_name(id, szName[0], charsmax(szName[]))
+	get_user_name(iPlayer, szName[1], charsmax(szName[]))
+	g_ePlayerData[iPlayer][Kills] = 0
+	CC_LogMessage(0, _, "%L", LANG_PLAYER, "BECOMEVIP_RESET_KILLS", szName[0], szName[1])
+	return PLUGIN_HANDLED
+}
+
+public refresh_status(id)
+	check_status(id, false)
+
+bool:check_status(const id, const bool:bAnnounce)
+{
+	if(has_vip_flags(id))
+		return
+		
+	if(g_ePlayerData[id][Kills] >= g_eSettings[KILLS_NEEDED])
+		set_vip_flags(id, bAnnounce)
+}
+	
+set_vip_flags(const id, const bool:bAnnounce)
+{
+	set_user_flags(id, g_eSettings[VIP_FLAGS_BIT])
+	
+	if(bAnnounce)
+	{
+		switch(g_eSettings[VIP_SUCCESS_MESSAGE])
+		{
+			case 1: CC_SendMessage(id, "%L", id, "BECOMEVIP_SUCCESS_PLR", g_eSettings[VIP_FLAGS_STR], g_eSettings[KILLS_NEEDED])
+			case 2: CC_SendMessage(0, "%L", LANG_PLAYER, "BECOMEVIP_SUCCESS_ALL", g_ePlayerData[id][Name], g_eSettings[VIP_FLAGS_STR], g_eSettings[KILLS_NEEDED])
+		}
+	}
+}
+	
+bool:has_vip_flags(const id)
+	return ((get_user_flags(id) & g_eSettings[VIP_FLAGS_BIT]) == g_eSettings[VIP_FLAGS_BIT])
+
+use_vault(const id, const bool:bSave, const szInfo[])
+{
+	if(!szInfo[0])
+		return
+	
+	if(bSave)
+	{
+		static szKills[10]
+		num_to_str(g_ePlayerData[id][Kills], szKills, charsmax(szKills))
+		nvault_set(g_iVault, szInfo, szKills)
+	}
+	else
+	{
+		g_ePlayerData[id][Kills] = nvault_get(g_iVault, szInfo)
+		set_task(FLAGS_DELAY, "refresh_status", id)
+	}
 }
 
 public plugin_natives()
 {
 	register_library("becomevip")
-	register_native("IsUserVip", "_IsUserVip")
-	register_native("GetKillsNeeded", "_GetKillsNeeded")
-	register_native("GetUserKills", "_GetUserKills")
-	register_native("GetKillsLeft", "_GetKillsLeft")
-	register_native("GetVipPrefix", "_GetVipPrefix")
-	register_native("GetVipFlags", "_GetVipFlags")
-	register_native("VipFlagsActive", "_VipFlagsActive")
-	register_native("UsingCsstats", "_UsingCsstats")
-	register_native("UsingHud", "_UsingHud")
-	register_native("UsingSteam", "_UsingSteam")
-	register_native("UsingQuickSave", "_UsingQuickSave")
+	register_native("becomevip_get_flags", "_becomevip_get_flags")
+	register_native("becomevip_get_kills_needed", "_becomevip_get_kills_needed")
+	register_native("becomevip_get_save_type", "_becomevip_get_save_type")
+	register_native("becomevip_get_user_kills", "_becomevip_get_user_kills")
+	register_native("becomevip_is_hud_enabled", "_becomevip_is_hud_enabled")
+	register_native("becomevip_user_has_flags", "_becomevip_user_has_flags")
 }
 
-public bool:_IsUserVip(iPlugin, iParams)
-	return is_user_vip(get_param(1))
-	
-public _GetKillsNeeded(iPlugin, iParams)
-	return g_iNeededKills
-	
-public _GetUserKills(iPlugin, iParams)
-	return get_frags_total(get_param(1))
-	
-public _GetKillsLeft(iPlugin, iParams)
-	return get_frags_left(get_param(1))
-	
-public _GetVipPrefix(iPlugin, iParams)
-	set_string(1, g_szPrefix, get_param(2))
-	
-public _GetVipFlags(iPlugin, iParams)
-	set_string(1, g_szFlags, get_param(2))
-	
-public bool:_VipFlagsActive(iPlugin, iParams)
-	return g_szFlags[0] == EOS ? false : true
-	
-public bool:_UsingCsstats(iPlugin, iParams)
-{
-	#if defined USE_CSSTATS
-		return true
-	#else
-		return false
-	#endif
-}
+public _becomevip_get_flags(iPlugin, iParams)
+	return g_eSettings[VIP_FLAGS_BIT]
 
-public bool:_UsingHud(iPlugin, iParams)
-{
-	#if defined USE_HUD
-		return true
-	#else	
-		return false
-	#endif
-}
-
-public bool:_UsingSteam(iPlugin, iParams)
-{
-	#if defined USE_STEAM
-		return true
-	#else
-		return false
-	#endif
-}
-
-public bool:_UsingQuickSave(iPlugin, iParams)
-{
-	#if defined QUICK_SAVE
-		return true
-	#else
-		return false
-	#endif
-}
-
-public client_authorized(id)
-{
-	#if defined USE_CSSTATS
-		set_task(5.0, "authorizePlayer", id)
-	#else
-		updateUserFlags(id)
-	#endif
-}
-
-public authorizePlayer(id)
-	if(is_user_vip(id))
-		updateUserFlags(id)
+public _becomevip_get_kills_needed(iPlugin, iParams)
+	return g_eSettings[KILLS_NEEDED]
 	
-public client_connect(id)
-{
-	#if !defined USE_CSSTATS
-		#if defined USE_STEAM
-			if(steam_valid(id))
-			{
-				new szInfo[35]
-				get_save_info(id, szInfo, charsmax(szInfo))
-				LoadData(id, szInfo)
-			}
-		#else
-		{
-			new szInfo[35]
-			get_save_info(id, szInfo, charsmax(szInfo))
-			LoadData(id, szInfo)
-		}
-		#endif
-	#endif
-}
+public _becomevip_get_save_type(iPlugin, iParams)
+	return g_eSettings[SAVE_TYPE]
+	
+public _becomevip_get_user_kills(iPlugin, iParams)
+	return g_ePlayerData[get_param(1)][Kills]
+	
+public bool:_becomevip_is_hud_enabled(iPlugin, iParams)
+	return g_eSettings[HUD_MESSAGE_ENABLED]
 
-public client_disconnect(id)
-{
-	#if !defined USE_CSSTATS
-		#if defined USE_STEAM
-			if(steam_valid(id))
-			{
-				new szInfo[35]
-				get_save_info(id, szInfo, charsmax(szInfo))
-				SaveData(id, szInfo)
-			}
-		#else
-		{
-			new szInfo[35]
-			get_save_info(id, szInfo, charsmax(szInfo))
-			SaveData(id, szInfo)
-		}
-		#endif
-	#endif
-}
-	
-#if !defined USE_CSSTATS
-	SaveData(id, szInfo[])
-	{
-		new szKills[10]
-		num_to_str(g_iKills[id], szKills, charsmax(szKills))
-		nvault_set(g_iVault, szInfo, szKills)
-	}
-
-	LoadData(id, szInfo[])
-	{
-		new szKills[10]
-		nvault_get(g_iVault, szInfo, szKills, charsmax(szKills))
-		g_iKills[id] = str_to_num(szKills)
-	}
-	
-	#if !defined USE_STEAM
-		public client_infochanged(id)
-		{
-			new szNewName[32], szOldName[32]
-			get_user_info(id, "name", szNewName, charsmax(szNewName))
-			get_user_name(id, szOldName, charsmax(szOldName))
-			
-			if(!equal(szNewName, szOldName))
-			{
-				SaveData(id, szOldName)
-				LoadData(id, szNewName)
-			}
-		}
-	#endif
-#endif
-
-public plugin_end()
-{
-	#if !defined USE_CSSTATS
-		nvault_close(g_iVault)
-	#endif
-}
-
-public eventPlayerSpawn(id)
-{
-	#if defined USE_HUD
-		if(!is_user_vip(id) && is_user_alive(id))
-		{
-			set_hudmessage(HUD_COLOR_RED, HUD_COLOR_GREEN, HUD_COLOR_BLUE, HUD_POSITION_X, HUD_POSITION_Y, HUD_EFFECTS, HUD_FXTIME, HUD_HOLDTIME, HUD_FADEINTIME, HUD_FADEOUTTIME, HUD_CHANNEL)
-			show_hudmessage(id, "Reach %i kills to get VIP extras!^nYou currently have %i.", g_iNeededKills, get_frags_total(id))
-		}
-	#endif
-}
-
-public restartAll(id, level, cid)
-{
-	if(!cmd_access(id, level, cid, 0))
-		return PLUGIN_HANDLED
-
-	new szName[32], iPlayers[32], iPnum
-	get_user_name(id, szName, charsmax(szName))
-	get_players(iPlayers, iPnum)
-	
-	#if !defined USE_CSSTATS
-		nvault_clear(g_iVault)
-	#endif
-	
-	for(new i; i < iPnum; i++)
-		g_iKills[iPlayers[i]] = 0
-		
-	ColorChat(0, TEAM_COLOR, "%s ^3%s ^1has deleted all ^4becomeVIP data^1. The stats are now ^3restarted^1.", g_szPrefix, szName)
-	client_print(id, print_console, "%s Data cleared successfully!", g_szPrefix)
-	log_amx("%s has deleted all becomeVIP data", szName)
-	return PLUGIN_HANDLED
-}
-
-public restartPlayer(id, level, cid)
-{
-	if(!cmd_access(id, level, cid, 2))
-		return PLUGIN_HANDLED
-
-	new szArg[32], szName[32], szName2[32]
-	get_user_name(id, szName, charsmax(szName))
-	read_argv(1, szArg, charsmax(szArg))
-	new iPlayer = cmd_target(id, szArg, 3)
-	
-	if(!iPlayer)
-		return PLUGIN_HANDLED
-	
-	g_iKills[iPlayer] = 0
-	get_user_name(iPlayer, szName2, charsmax(szName2))
-	ColorChat(0, TEAM_COLOR, "%s ^1ADMIN ^3%s ^1restarted ^3%s^1's becomeVIP data.", g_szPrefix, szName, szName2)
-	client_print(id, print_console, "%s You have restarted %s's becomeVIP data.", g_szPrefix, szName2)
-	log_amx("%s restarted %s's becomeVIP data", szName, szName2)
-	return PLUGIN_HANDLED
-}
-	
-public cmdKills(id)
-{
-	#if defined USE_STEAM
-		if(!steam_valid(id))
-		{
-			ColorChat(id, TEAM_COLOR, "%s Only players with a valid ^3SteamID ^1can use this option (^4Protocol 47/48^1).", g_szPrefix)
-			return PLUGIN_HANDLED
-		}
-	#endif
-	
-	if(is_user_vip(id)) ColorChat(id, TEAM_COLOR, "%s You have the required number of kills (^4%i/%i^1), thus you get ^3free VIP extras^1.", g_szPrefix, get_frags_total(id), g_iNeededKills)
-	else
-	{
-		if(g_iFlags) ColorChat(id, TEAM_COLOR, "%s You need ^4%i ^1more kills (^3current: ^4%i^1) to get the following ^3VIP flag(s)^1: ^4%s", g_szPrefix, get_frags_left(id), get_frags_total(id), g_szFlags)
-		else ColorChat(id, TEAM_COLOR, "%s You need ^4%i ^1more kills (^3current: ^4%i^1) to get ^3VIP extras", g_szPrefix, get_frags_left(id), get_frags_total(id))
-	}
-	return PLUGIN_HANDLED
-}
-	
-public eventPlayerKilled()
-{
-	new iKiller = read_data(1), iVictim = read_data(2)
-	
-	if(!is_user_connected(iKiller) || !is_user_connected(iVictim) || iKiller == iVictim)
-		return
-		
-	#if defined USE_STEAM
-		if(!steam_valid(iKiller))
-			return
-	#endif
-		
-	#if !defined USE_CSSTATS
-		g_iKills[iKiller]++
-	#else
-		#if defined QUICK_SAVE
-		{
-			new szInfo[35]
-			get_save_info(iKiller, szInfo, charsmax(szInfo))
-			SaveData(iKiller, szInfo)
-		}
-		#endif
-	#endif
-	
-	if(get_frags_total(iKiller) == g_iNeededKills)
-	{
-		new szName[32]
-		get_user_name(iKiller, szName, charsmax(szName))
-		ColorChat(0, TEAM_COLOR, "%s ^3%s ^1has killed ^4%i players ^1and received ^3free VIP extras^1!", g_szPrefix, szName, g_iNeededKills)
-		updateUserFlags(iKiller)
-	}
-}
-
-updateUserFlags(id)
-{
-	#if defined USE_STEAM
-		if(!steam_valid(id))
-			return
-	#endif
-	
-	if(is_user_vip(id))
-	{
-		set_user_flags(id, g_iFlags)
-		remove_user_flags(id, g_iFlagZ)
-	}
-}
-
-get_frags_total(id)
-{
-	#if defined USE_CSSTATS
-		new iStats[8], iHits[8]
-		get_user_stats(id, iStats, iHits)
-		return iStats[0]
-	#else
-		return g_iKills[id]
-	#endif
-}
-
-get_frags_left(id)
-	return g_iNeededKills - get_frags_total(id)
-
-bool:is_user_vip(id)
-	return get_frags_total(id) >= g_iNeededKills ? true : false
-	
-#if defined USE_STEAM
-	bool:steam_valid(id)
-	{
-		new szAuthId[35]
-		get_user_authid(id, szAuthId, charsmax(szAuthId))
-		
-		if(!equali(szAuthId, "STEAM_", 6) || equal(szAuthId, "STEAM_ID_LAN") || equal(szAuthId, "STEAM_ID_PENDING"))
-			return false
-		
-		return true
-	}
-#endif
+public bool:_becomevip_user_has_flags(iPlugin, iParams)
+	return has_vip_flags(get_param(1))

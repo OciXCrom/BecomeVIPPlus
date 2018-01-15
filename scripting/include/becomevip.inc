@@ -4,79 +4,46 @@
 
 #define _becomevip_included
 
-/** 
- * Checks whether a players has unlocked the VIP Plus option.
- * 
- * @param id			Player's index.
- * @return				True if he has, 0 if he hasn't.
+/**
+ * Returns the flags that VIP users get as a bitsum.
+ *
+ * @return          Flags that VIP users get as a bitsum
  */
-native bool:IsUserVip(id)
+native becomevip_get_flags()
 
-/** 
- * Gets number of kills needed to get VIP extras.
- * 
- * @return				Number of kills needed to get VIP extras.
+/**
+ * Returns the number of kills needed to become VIP.
+ *
+ * @return         	Number of kills needed to become VIP
  */
-native GetKillsNeeded()
+native becomevip_get_kills_needed()
 
-/** 
- * Gets the number of player's kills.
- * 
- * @param id			Player's index.
- * @return				Number of player's kills.
+/**
+ * Returns the save type for players' kills.
+ *
+ * @return         	Save type for players' kills
  */
-native GetUserKills(id)
+native becomevip_get_save_type()
 
-/** 
- * Gets the number of player's kills left.
- * 
- * @param id			Player's index.
- * @return				Number of player's kills left.
+/**
+ * Returns the number of kills the player has.
+ *
+ * @param id     	Client index
+ *
+ * @return         	Save type for players' kills
  */
-native GetKillsLeft(id)
+native becomevip_get_user_kills(const id)
 
-/** 
- * Gets the plugin prefix.
- * 
- * @param szPrefix		Buffer to store the prefix.
- * @param iPrefixLen	Prefix's buffer length.
- * @noreturn
+/**
+ * Checks whether HUD messages are enabled for the plugin.
+ *
+ * @return         	true if they are, false otherwise
  */
-native GetVipPrefix(szPrefix[], iPrefixLen)
+native bool:becomevip_is_hud_enabled()
 
-/** 
- * Gets the VIP flags that players will receive.
- * 
- * @param szFlags		Buffer to store the flags.
- * @param iFlagsLen		Flags' buffer length.
- * @noreturn
+/**
+ * Checks whether the player has the flags offered by the plugin.
+ *
+ * @return         	true if he has, false otherwise
  */
-native GetVipFlags(szFlags[], iFlagsLen)
-
-/** 
- * Checks whether the plugin is using CSStats.
- * 
- * @return				True if it is, 0 if it isn't.
- */
-native bool:UsingCsstats()
-
-/** 
- * Checks whether the plugin is using HUD message.
- * 
- * @return				True if it is, 0 if it isn't.
- */
-native bool:UsingHud()
-
-/** 
- * Checks whether the plugin is using Steam.
- * 
- * @return				True if it is, 0 if it isn't.
- */
-native bool:UsingSteam()
-
-/** 
- * Checks whether the plugin is using Quick Save.
- * 
- * @return				True if it is, 0 if it isn't.
- */
-native bool:UsingQuickSave()
+native bool:becomevip_user_has_flags(const id)
