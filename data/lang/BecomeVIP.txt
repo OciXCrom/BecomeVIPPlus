@@ -1,0 +1,29 @@
+[en]
+BECOMEVIP_SUCCESS_PLR = You received the flags &x03%s &x01for killing &x04%i players&x01!
+BECOMEVIP_SUCCESS_ALL = &x03%s &x01received the flags &x03%s &x01for killing &x04%i players&x01!
+BECOMEVIP_HUD_MSG = Reach %i kills to get VIP extras!^nYou currently have %i.
+BECOMEVIP_INFO_NO = You need &x04%i &x01more kills (&x03current: &x04%i&x01) to get the following &x03VIP flag(s)&x01: &x04%s
+BECOMEVIP_INFO_YES = You have the &x03flags offered as a reward &x01for killing &x04%i players&x01: &x03%s
+BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01gave &x04%i kills &x01to &x03%s
+BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01took &x04%i kills &x01from &x03%s
+BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01reset &x03%s&x01's kills
+
+[mk]
+BECOMEVIP_SUCCESS_PLR = Gi dobivte flagovite &x03%s &x01zatoa shto ubivte &x04%i igrachi&x01!
+BECOMEVIP_SUCCESS_ALL = &x03%s &x01gi dobi flagovite &x03%s &x01zatoa shto ubi &x04%i igrachi&x01!
+BECOMEVIP_HUD_MSG = Ubijte %i igrachi za da dobiete besplatni VIP ekstri!^nMomentalno imate %i.
+BECOMEVIP_INFO_NO = Potrebni vi se ushte &x04%i &x01ubistva (&x03imate: &x04%i&x01) za da gi dobiete slednive &x03VIP flagovi&x01: &x04%s
+BECOMEVIP_INFO_YES = Gi imate &x03flagovite ponudeni kako nagrada &x01za ubivanje &x04%i igrachi&x01: &x03%s
+BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01dade &x04%i ubistva &x01na &x03%s
+BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01zema &x04%i ubistva &x01od &x03%s
+BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01gi resetira ubistvata na &x03%s&x01
+
+[bg]
+BECOMEVIP_SUCCESS_PLR = Poluchihte flagovete &x03%s &x01zashtoto ubihte &x04%i igrachi&x01!
+BECOMEVIP_SUCCESS_ALL = &x03%s &x01poluchi flagovete &x03%s &x01zashtoto ubi &x04%i igrachi&x01!
+BECOMEVIP_HUD_MSG = Ubiite %i igrachi za da poluchite bezplatni VIP ekstri!^nV momenta imate %i.
+BECOMEVIP_INFO_NO = Trqbva da ubiete oshte &x04%i &x01igrachi (&x03imate: &x04%i&x01) za da poluchite slednite &x03VIP flagove&x01: &x04%s
+BECOMEVIP_INFO_YES = Imate &x03flagovete predlojeni ot plugina kato nagrada &x01za ubiistvo na &x04%i igrachi&x01: &x03%s
+BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01dade &x04%i ubiistva &x01na &x03%s
+BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01vze &x04%i ubiistva &x01ot &x03%s
+BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01gi resetira ubiistvata na &x03%s&x01
