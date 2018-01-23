@@ -27,3 +27,13 @@ BECOMEVIP_INFO_YES = Imate &x03flagovete predlojeni ot plugina kato nagrada &x01
 BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01dade &x04%i ubiistva &x01na &x03%s
 BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01vze &x04%i ubiistva &x01ot &x03%s
 BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01gi resetira ubiistvata na &x03%s&x01
+
+[de]
+BECOMEVIP_SUCCESS_PLR = Du hast die Flaggen erhalten &x03%s &x01zum Toeten von &x04%i Spielern&x01!
+BECOMEVIP_SUCCESS_ALL = &x03%s &x01erhielt die Flaggen &x03%s &x01durchs Toeten von &x04%i Spielern&x01!
+BECOMEVIP_HUD_MSG = Erreiche %i Kills, um VIP-Extras zu bekommen!^nYou currently have %i.
+BECOMEVIP_INFO_NO = Du brauchst &x04%i &x01mehr Kills (&x03aktuell: &x04%i&x01) um die folgenden &x03VIP Flaggen zu bekommen&x01: &x04%s
+BECOMEVIP_INFO_YES = Du hast die &x03Flaggen als Belohnung &x01fürs Toeten &x04%i der Spieler&x01: angeboten.&x03%s
+BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01gab &x04%i Toetungen &x01to &x03%s
+BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01nahm &x04%i Toetungen &x01from &x03%s
+BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01setzt zurück &x03%s&x01's Toetungen
