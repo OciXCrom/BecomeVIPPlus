@@ -31,7 +31,7 @@ BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01gi resetira ubiistvata na &x03%s&x01
 [de]
 BECOMEVIP_SUCCESS_PLR = Du hast die Flaggen erhalten &x03%s &x01zum Toeten von &x04%i Spielern&x01!
 BECOMEVIP_SUCCESS_ALL = &x03%s &x01erhielt die Flaggen &x03%s &x01durchs Toeten von &x04%i Spielern&x01!
-BECOMEVIP_HUD_MSG = Erreiche %i Kills, um VIP-Extras zu bekommen!^nYou currently have %i.
+BECOMEVIP_HUD_MSG = Erreiche %i Kills, um VIP-Extras zu bekommen!^nDu hast aktuell %i.
 BECOMEVIP_INFO_NO = Du brauchst &x04%i &x01mehr Kills (&x03aktuell: &x04%i&x01) um die folgenden &x03VIP Flaggen zu bekommen&x01: &x04%s
 BECOMEVIP_INFO_YES = Du hast die &x03Flaggen als Belohnung &x01fürs Toeten &x04%i der Spieler&x01: angeboten.&x03%s
 BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01gab &x04%i Toetungen &x01to &x03%s
