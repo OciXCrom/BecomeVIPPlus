@@ -37,3 +37,13 @@ BECOMEVIP_INFO_YES = Du hast die &x03Flaggen als Belohnung &x01fürs Toeten &x04
 BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01gab &x04%i Toetungen &x01to &x03%s
 BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01nahm &x04%i Toetungen &x01from &x03%s
 BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01setzt zurück &x03%s&x01's Toetungen
+
+[tr]
+BECOMEVIP_SUCCESS_PLR = &x04%i oyuncu &x01oldurdugun icin &x03%s &x01yetkisini kazandin!
+BECOMEVIP_SUCCESS_ALL = &x03%s &x04%i oyuncu &x01oldurdugu icin &x03%s &x01yetkisini kazandi!
+BECOMEVIP_HUD_MSG = VIP ekstralarina ulasmak icin %i kisi oldur.^nSuanda oldurdugun kisi sayisi %i.
+BECOMEVIP_INFO_NO = Su &x03VIP yetkisini &x01kazanmak icin &x04%i &x01kisi daha oldurmen lazim (&x04suanki: &x03%i&x01): &x04%s
+BECOMEVIP_INFO_YES = &x03%i oyuncu &x01oldurdugun icin &x04odul olarak verilen su yetkileri &x01kazandin: &x03%s 
+BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x04%i oldurmeyi &x03%s &x01oyuncusuna verdi.
+BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x03%soyuncusundan &x04%i oldurme &x01aldi.
+BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x03%s &x01oyuncusunun oldurmelerini sifirladi.
