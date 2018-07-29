@@ -4,7 +4,7 @@
 #include <hamsandwich>
 #include <nvault>
 
-#define PLUGIN_VERSION "2.0"
+#define PLUGIN_VERSION "2.1"
 #define ARG_RANDOM -1
 #define RANDOM_COLOR random_num(50, 255) 
 #define FLAGS_DELAY 0.1
@@ -19,6 +19,7 @@ enum _:Settings
 	KILLS_NEEDED,
 	VIP_FLAGS_BIT,
 	VIP_FLAGS_STR[32],
+	IGNORE_BOTS,
 	VIP_SUCCESS_MESSAGE,
 	bool:HUD_MESSAGE_ENABLED,
 	HUD_MESSAGE_COLOR[3],
@@ -89,6 +90,8 @@ ReadFile()
 						copy(g_eSettings[VIP_FLAGS_STR], charsmax(g_eSettings[VIP_FLAGS_STR]), szValue)
 						g_eSettings[VIP_FLAGS_BIT] = read_flags(szValue)
 					}
+					else if(equal(szKey, "IGNORE_BOTS"))
+						g_eSettings[IGNORE_BOTS] = str_to_num(szValue) 
 					if(equal(szKey, "CHECK_KILLS_COMMANDS"))
 					{
 						while(szValue[0] != 0 && strtok(szValue, szKey, charsmax(szKey), szValue, charsmax(szValue), ','))
@@ -153,6 +156,9 @@ ReadFile()
 
 public client_authorized(id)
 {
+	if(ignore_bot(id))
+		return
+
 	switch(g_eSettings[SAVE_TYPE])
 	{
 		case 0:
@@ -169,10 +175,18 @@ public client_authorized(id)
 }
 
 public client_disconnect(id)
+{
+	if(ignore_bot(id))
+		return
+
 	use_vault(id, true, g_ePlayerData[id][Info])
+}
 	
 public client_infochanged(id)
-{		
+{
+	if(ignore_bot(id))
+		return
+
 	static szNewName[32], szOldName[32]
 	get_user_info(id, "name", szNewName, charsmax(szNewName))
 	get_user_name(id, szOldName, charsmax(szOldName))
@@ -194,7 +208,7 @@ public client_infochanged(id)
 
 public OnPlayerSpawn(id)
 {
-	if(!is_user_alive(id) || has_vip_flags(id))
+	if(!is_user_alive(id) || has_vip_flags(id) || ignore_bot(id))
 		return
 		
 	set_hudmessage
@@ -213,7 +227,7 @@ public OnPlayerKilled()
 {
 	new iAttacker = read_data(1), iVictim = read_data(2)
 		
-	if(is_user_connected(iAttacker) && iAttacker != iVictim)
+	if(is_user_connected(iAttacker) && iAttacker != iVictim && !ignore_bot(iAttacker))
 	{
 		g_ePlayerData[iAttacker][Kills]++
 		check_status(iAttacker, true)
@@ -282,7 +296,7 @@ public refresh_status(id)
 
 bool:check_status(const id, const bool:bAnnounce)
 {
-	if(has_vip_flags(id))
+	if(has_vip_flags(id) || ignore_bot(id))
 		return
 		
 	if(g_ePlayerData[id][Kills] >= g_eSettings[KILLS_NEEDED])
@@ -302,7 +316,10 @@ set_vip_flags(const id, const bool:bAnnounce)
 		}
 	}
 }
-	
+
+bool:ignore_bot(const id)
+	return (g_eSettings[IGNORE_BOTS] && is_user_bot(id))
+
 bool:has_vip_flags(const id)
 	return ((get_user_flags(id) & g_eSettings[VIP_FLAGS_BIT]) == g_eSettings[VIP_FLAGS_BIT])
 
