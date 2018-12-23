@@ -1,4 +1,4 @@
-[en]
+[en] -- OciXCrom
 BECOMEVIP_SUCCESS_PLR = You received the flags &x03%s &x01for killing &x04%i players&x01!
 BECOMEVIP_SUCCESS_ALL = &x03%s &x01received the flags &x03%s &x01for killing &x04%i players&x01!
 BECOMEVIP_HUD_MSG = Reach %i kills to get VIP extras!^nYou currently have %i.
@@ -8,7 +8,7 @@ BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01gave &x04%i kills &x01to &x03%s
 BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01took &x04%i kills &x01from &x03%s
 BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01reset &x03%s&x01's kills
 
-[mk]
+[mk] -- OciXCrom
 BECOMEVIP_SUCCESS_PLR = Gi dobivte flagovite &x03%s &x01zatoa shto ubivte &x04%i igrachi&x01!
 BECOMEVIP_SUCCESS_ALL = &x03%s &x01gi dobi flagovite &x03%s &x01zatoa shto ubi &x04%i igrachi&x01!
 BECOMEVIP_HUD_MSG = Ubijte %i igrachi za da dobiete besplatni VIP ekstri!^nMomentalno imate %i.
@@ -18,7 +18,7 @@ BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01dade &x04%i ubistva &x01na &x03%s
 BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01zema &x04%i ubistva &x01od &x03%s
 BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01gi resetira ubistvata na &x03%s&x01
 
-[bg]
+[bg] -- OciXCrom
 BECOMEVIP_SUCCESS_PLR = Poluchihte flagovete &x03%s &x01zashtoto ubihte &x04%i igrachi&x01!
 BECOMEVIP_SUCCESS_ALL = &x03%s &x01poluchi flagovete &x03%s &x01zashtoto ubi &x04%i igrachi&x01!
 BECOMEVIP_HUD_MSG = Ubiite %i igrachi za da poluchite bezplatni VIP ekstri!^nV momenta imate %i.
@@ -28,7 +28,7 @@ BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01dade &x04%i ubiistva &x01na &x03%s
 BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01vze &x04%i ubiistva &x01ot &x03%s
 BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01gi resetira ubiistvata na &x03%s&x01
 
-[de]
+[de] -- Godofwar
 BECOMEVIP_SUCCESS_PLR = Du hast die Flaggen erhalten &x03%s &x01zum Toeten von &x04%i Spielern&x01!
 BECOMEVIP_SUCCESS_ALL = &x03%s &x01erhielt die Flaggen &x03%s &x01durchs Toeten von &x04%i Spielern&x01!
 BECOMEVIP_HUD_MSG = Erreiche %i Kills, um VIP-Extras zu bekommen!^nDu hast aktuell %i.
@@ -38,7 +38,7 @@ BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01gab &x04%i Toetungen &x01to &x03%s
 BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01nahm &x04%i Toetungen &x01from &x03%s
 BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01setzt zurück &x03%s&x01's Toetungen
 
-[tr]
+[tr] -- Snake.
 BECOMEVIP_SUCCESS_PLR = &x04%i oyuncu &x01oldurdugun icin &x03%s &x01yetkisini kazandin!
 BECOMEVIP_SUCCESS_ALL = &x03%s &x04%i oyuncu &x01oldurdugu icin &x03%s &x01yetkisini kazandi!
 BECOMEVIP_HUD_MSG = VIP ekstralarina ulasmak icin %i kisi oldur.^nSuanda oldurdugun kisi sayisi %i.
@@ -47,3 +47,13 @@ BECOMEVIP_INFO_YES = &x03%i oyuncu &x01oldurdugun icin &x04odul olarak verilen s
 BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x04%i oldurmeyi &x03%s &x01oyuncusuna verdi.
 BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x03%soyuncusundan &x04%i oldurme &x01aldi.
 BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x03%s &x01oyuncusunun oldurmelerini sifirladi.
+
+[hu] -- RaZ_HU
+BECOMEVIP_SUCCESS_PLR = &x03%s &x01jogo(ka)t kaptál &x04%i játékos megöléséért&x01!
+BECOMEVIP_SUCCESS_ALL = &x03%s &x03%s &x01jogokat kapott &x04%i játékos megöléséért&x01!
+BECOMEVIP_HUD_MSG = Érj el %i ölést, hogy megkaphasd a VIP extrákat!^nEddig %i ölésed van.
+BECOMEVIP_INFO_NO = Még &x04%i &x01ölésre van szükséged (&x03jelenleg: &x04%i&x01), hogy megkapd a következő &x03VIP jogo(ka)t&x01: &x04%s
+BECOMEVIP_INFO_YES = Megkaptad a &x03felajánlott VIP jogo(ka)t &x04%i játékos &x01megöléséért: &x03%s
+BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x04%i &x01ölést adott &x03%s játékosnak
+BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x04%i &x01ölést vont le &x03%s játékostól
+BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01kinullázta &x03%s&x01's öléseit
