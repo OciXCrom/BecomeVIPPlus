@@ -57,3 +57,13 @@ BECOMEVIP_INFO_YES = Megkaptad a &x03felajánlott VIP jogo(ka)t &x04%i játékos
 BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x04%i &x01ölést adott &x03%s játékosnak
 BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x04%i &x01ölést vont le &x03%s játékostól
 BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01kinullázta &x03%s&x01's öléseit
+
+[ro] -- Shadows Adi
+BECOMEVIP_SUCCESS_PLR = Ai primit flagurile &x03%s &x01pentru uciderea a &x04%i de jucatori&x01!
+BECOMEVIP_SUCCESS_ALL = &x03%s &x01a primit accesele &x03%s &x01pentru uciderea a &x04%i de jucatori&x01!
+BECOMEVIP_HUD_MSG = Atinge %i ucideri pentru a primi VIP!^nIn prezent ai %i.
+BECOMEVIP_INFO_NO = Mai ai nevoie de &x04%i &x01ucideri (&x03ucideri curente: &x04%i&x01) pentru a primi &x03accese VIP &x01: &x04%s
+BECOMEVIP_INFO_YES = Ai primit &x03accesele oferite drept premiu &x01pentru uciderea a &x04%i de jucatori&x01: &x03%s
+BECOMEVIP_GIVE_KILLS = ADMIN &x03%s &x01i-a dat &x04%i ucideri &x01lui &x03%s
+BECOMEVIP_TAKE_KILLS = ADMIN &x03%s &x01a luat &x04%i ucideri &x01de la &x03%s
+BECOMEVIP_RESET_KILLS = ADMIN &x03%s &x01i-a resetat lui &x03%s&x01 uciderile.  
